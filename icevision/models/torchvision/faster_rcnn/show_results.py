@@ -26,6 +26,7 @@ def show_results(
     denormalize_fn: Optional[callable] = denormalize_imagenet,
     show: bool = True,
     device: Optional[torch.device] = None,
+    figsize=None,
 ) -> None:
     return base_show_results(
         predict_fn=predict,
@@ -37,6 +38,7 @@ def show_results(
         show=show,
         detection_threshold=detection_threshold,
         device=device,
+        figsize=figsize,
     )
 
 

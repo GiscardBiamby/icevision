@@ -15,6 +15,7 @@ def base_show_results(
     ncols: int = 3,
     denormalize_fn: Optional[callable] = denormalize_imagenet,
     show: bool = True,
+    figsize=None,
     **predict_kwargs,
 ) -> None:
     records = random.choices(dataset, k=num_samples)
@@ -25,4 +26,5 @@ def base_show_results(
         denormalize_fn=denormalize_fn,
         ncols=ncols,
         show=show,
+        figsize=figsize,
     )

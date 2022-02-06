@@ -204,7 +204,57 @@ def convert_records_to_coco_style(
 
     if categories:
         categories_set = set(annotations_dict["category_id"])
-        categories_ = [{"id": i} for i in categories_set]
+        class_to_id = {
+            "background": 0,
+            "between_rounds_box_white": 1,
+            "between_rounds_box_with_orange_next": 2,
+            "big_green_btw_rounds_box": 3,
+            "challenge_btn_orange": 4,
+            "challenge_high_score_board": 5,
+            "curr_state": 6,
+            "did_you_enjoy_this_location": 7,
+            "final_scores_box_beige": 8,
+            "finished_legs_box": 9,
+            "game_about_to_start_box_white": 10,
+            "game_finished_well_done_big_box": 11,
+            "game_finished_white_box": 12,
+            "game_title": 13,
+            "guess": 14,
+            "guess_grey": 15,
+            "guess_w_icon_only": 16,
+            "high_score_box": 17,
+            "in_game_mini_map": 18,
+            "invite_friends": 19,
+            "leader_board": 20,
+            "left_menu_dark": 21,
+            "loading_loc_white": 22,
+            "make_a_guess": 23,
+            "next_orange_btn": 24,
+            "next_round": 25,
+            "other": 26,
+            "participants_box": 27,
+            "play": 28,
+            "play_again": 29,
+            "play_current_leg": 30,
+            "play_next_round": 31,
+            "points_bar": 32,
+            "points_bar_two_bars": 33,
+            "refresh_btn": 34,
+            "setup_round_time_limit_box": 35,
+            "share_challenge_box_white": 36,
+            "show_full_results": 37,
+            "show_high_score": 38,
+            "start_challenge_orange": 39,
+            "start_game": 40,
+            "status_bar": 41,
+            "status_bar_white": 42,
+            "try_another_map": 43,
+            "try_pro_for_free": 44,
+            "users_bar_white": 45,
+            "view_summary": 46,
+        }
+        id2class = {v: k for k, v in class_to_id.items()}
+        categories_ = [{"id": i, "name": id2class[i]} for i in categories_set]
 
     res = {}
     if images_:
