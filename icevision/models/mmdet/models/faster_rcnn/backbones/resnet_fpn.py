@@ -10,6 +10,8 @@ __all__ = [
     "resnext101_32x4d_fpn_2x",
     "resnext101_64x4d_fpn_1x",
     "resnext101_64x4d_fpn_2x",
+    "resnest50_fpn",
+    "resnest101_fpn",
 ]
 
 from icevision.imports import *
@@ -77,4 +79,25 @@ resnext101_64x4d_fpn_1x = MMDetFasterRCNNBackboneConfig(
 resnext101_64x4d_fpn_2x = MMDetFasterRCNNBackboneConfig(
     config_path=base_config_path / "faster_rcnn_x101_64x4d_fpn_2x_coco.py",
     weights_url=f"{base_weights_url}/faster_rcnn_x101_64x4d_fpn_2x_coco/faster_rcnn_x101_64x4d_fpn_2x_coco_20200512_161033-5961fa95.pth",
+)
+
+###
+###
+# MMDetBackboneConfig
+
+# from mmdet.models.backbones.resnest import ResNeSt
+
+resnest_base_config_path = mmdet_configs_path / "resnest"
+resnest_base_weights_url = "https://download.openmmlab.com/mmdetection/v2.0/resnest"
+
+resnest50_fpn = MMDetFasterRCNNBackboneConfig(
+    config_path=resnest_base_config_path
+    / "faster_rcnn_s50_fpn_syncbn-backbone+head_mstrain-range_1x_coco.py",
+    weights_url=f"https://download.openmmlab.com/mmdetection/v2.0/resnest/faster_rcnn_s50_fpn_syncbn-backbone%2Bhead_mstrain-range_1x_coco/faster_rcnn_s50_fpn_syncbn-backbone%2Bhead_mstrain-range_1x_coco_20200926_125502-20289c16.pth",
+)
+
+resnest101_fpn = MMDetFasterRCNNBackboneConfig(
+    config_path=resnest_base_config_path
+    / "faster_rcnn_s101_fpn_syncbn-backbone+head_mstrain-range_1x_coco.py",
+    weights_url=f"https://download.openmmlab.com/mmdetection/v2.0/resnest/faster_rcnn_s101_fpn_syncbn-backbone%2Bhead_mstrain-range_1x_coco/faster_rcnn_s101_fpn_syncbn-backbone%2Bhead_mstrain-range_1x_coco_20201006_021058-421517f1.pth",
 )
