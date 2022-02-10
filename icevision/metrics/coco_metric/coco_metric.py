@@ -1,9 +1,9 @@
 __all__ = ["COCOMetric", "COCOMetricType"]
 
-from icevision.imports import *
-from icevision.utils import *
 from icevision.data import *
+from icevision.imports import *
 from icevision.metrics.metric import *
+from icevision.utils import *
 
 
 class COCOMetricType(Enum):
@@ -63,6 +63,7 @@ class COCOMetric(Metric):
             coco_eval.summarize()
 
         stats = coco_eval.stats
+        per_class_stats = coco_eval.stats_dict_per_class
         logs = {
             "AP (IoU=0.50:0.95) area=all": stats[0],
             "AP (IoU=0.50) area=all": stats[1],
@@ -76,6 +77,7 @@ class COCOMetric(Metric):
             "AR (IoU=0.50:0.95) area=small maxDets=100": stats[9],
             "AR (IoU=0.50:0.95) area=medium maxDets=100": stats[10],
             "AR (IoU=0.50:0.95) area=large maxDets=100": stats[11],
+            **per_class_stats,
         }
 
         self._reset()

@@ -1,11 +1,12 @@
 __all__ = ["model"]
 
 from icevision.imports import *
-from mmcv import Config
-from mmdet.models import build_detector
-from mmcv.runner import load_checkpoint
-from icevision.models.mmdet.utils import *
 from icevision.models.mmdet.common.utils import *
+from icevision.models.mmdet.utils import *
+from icevision.utils.capture_stdout import CaptureStdout
+from mmcv import Config
+from mmcv.runner import load_checkpoint
+from mmdet.models import build_detector
 
 
 def model(

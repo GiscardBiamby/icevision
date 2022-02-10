@@ -1,12 +1,12 @@
 __all__ = ["show_results"]
 
-from icevision.imports import *
-from icevision.utils import *
 from icevision.core import *
 from icevision.data import *
+from icevision.imports import *
 from icevision.models.base_show_results import base_show_results
 from icevision.models.mmdet.common.bbox.dataloaders import *
 from icevision.models.mmdet.common.bbox.prediction import *
+from icevision.utils import *
 
 
 def show_results(
@@ -18,6 +18,7 @@ def show_results(
     denormalize_fn: Optional[callable] = denormalize_imagenet,
     show: bool = True,
     device: Optional[torch.device] = None,
+    figsize=None,
 ) -> None:
     return base_show_results(
         predict_fn=predict,
@@ -29,4 +30,5 @@ def show_results(
         show=show,
         detection_threshold=detection_threshold,
         device=device,
+        figsize=figsize,
     )
