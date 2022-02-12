@@ -31,12 +31,14 @@ class COCOMetric(Metric):
         iou_thresholds: Optional[Sequence[float]] = None,
         print_summary: bool = False,
         show_pbar: bool = False,
+        class2id: Dict = None,
     ):
         self.metric_type = metric_type
         self.iou_thresholds = iou_thresholds
         self.print_summary = print_summary
         self.show_pbar = show_pbar
         self._records, self._preds = [], []
+        self._class2id = cast(Dict, class2id or {})
 
     def _reset(self):
         self._records.clear()
@@ -53,6 +55,7 @@ class COCOMetric(Metric):
                 records=self._records,
                 preds=self._preds,
                 metric_type=self.metric_type.value,
+                class2id=self._class2id,
                 iou_thresholds=self.iou_thresholds,
                 show_pbar=self.show_pbar,
             )

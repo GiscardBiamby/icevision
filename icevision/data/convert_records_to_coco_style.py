@@ -8,9 +8,11 @@ __all__ = [
     "create_coco_eval",
 ]
 
+from typing import Dict
+
+from icevision.core import *
 from icevision.imports import *
 from icevision.utils import *
-from icevision.core import *
 from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
 
@@ -29,14 +31,14 @@ def create_coco_api(coco_records) -> COCO:
     return coco_ds
 
 
-def coco_api_from_preds(preds, show_pbar: bool = False) -> COCO:
-    coco_preds = convert_preds_to_coco_style(preds, show_pbar=show_pbar)
+def coco_api_from_preds(preds, class2id: Dict, show_pbar: bool = False) -> COCO:
+    coco_preds = convert_preds_to_coco_style(preds, class2id, show_pbar=show_pbar)
     return create_coco_api(coco_preds)
 
 
-def coco_api_from_records(records, show_pbar: bool = False) -> COCO:
+def coco_api_from_records(records, class2id: Dict, show_pbar: bool = False) -> COCO:
     """Create pycocotools COCO dataset from records"""
-    coco_records = convert_records_to_coco_style(records, show_pbar=show_pbar)
+    coco_records = convert_records_to_coco_style(records, class2id, show_pbar=show_pbar)
     return create_coco_api(coco_records=coco_records)
 
 
@@ -44,6 +46,7 @@ def create_coco_eval(
     records,
     preds,
     metric_type: str,
+    class2id: Dict,
     iou_thresholds: Optional[Sequence[float]] = None,
     show_pbar: bool = False,
 ) -> COCOeval:
@@ -56,8 +59,8 @@ def create_coco_eval(
         # needs 'filepath' for mask `coco.py#418`
         pred.filepath = record.filepath
 
-    target_ds = coco_api_from_records(records, show_pbar=show_pbar)
-    pred_ds = coco_api_from_preds(preds, show_pbar=show_pbar)
+    target_ds = coco_api_from_records(records, class2id, show_pbar=show_pbar)
+    pred_ds = coco_api_from_preds(preds, class2id, show_pbar=show_pbar)
 
     coco_eval = COCOeval(target_ds, pred_ds, metric_type)
     if iou_thresholds is not None:
@@ -104,13 +107,9 @@ def convert_record_to_coco_annotations(record):
         # HACK: Hacky again!
         mask_array = record.detection.mask_array
         if mask_array is None:
-            mask_array = MaskArray.from_masks(
-                record.detection.masks, record.height, record.width
-            )
+            mask_array = MaskArray.from_masks(record.detection.masks, record.height, record.width)
 
-        annotations_dict["segmentation"] = mask_array.to_erles(
-            record.height, record.width
-        ).erles
+        annotations_dict["segmentation"] = mask_array.to_erles(record.height, record.width).erles
 
         # if isinstance(masks, MaskArray):
         #     masks = masks.to_erles(record.height, record.width)
@@ -160,14 +159,15 @@ def convert_record_to_coco_annotations(record):
     return annotations_dict
 
 
-def convert_preds_to_coco_style(preds, show_pbar: bool = False):
+def convert_preds_to_coco_style(preds, class2id: Dict, show_pbar: bool = False):
     return convert_records_to_coco_style(
-        records=preds, images=True, categories=False, show_pbar=show_pbar
+        records=preds, class2id=class2id, images=True, categories=False, show_pbar=show_pbar
     )
 
 
 def convert_records_to_coco_style(
     records,
+    class2id: Dict,
     images: bool = True,
     annotations: bool = True,
     categories: bool = True,
@@ -204,57 +204,14 @@ def convert_records_to_coco_style(
 
     if categories:
         categories_set = set(annotations_dict["category_id"])
-        class_to_id = {
-            "background": 0,
-            "between_rounds_box_white": 1,
-            "between_rounds_box_with_orange_next": 2,
-            "big_green_btw_rounds_box": 3,
-            "challenge_btn_orange": 4,
-            "challenge_high_score_board": 5,
-            "curr_state": 6,
-            "did_you_enjoy_this_location": 7,
-            "final_scores_box_beige": 8,
-            "finished_legs_box": 9,
-            "game_about_to_start_box_white": 10,
-            "game_finished_well_done_big_box": 11,
-            "game_finished_white_box": 12,
-            "game_title": 13,
-            "guess": 14,
-            "guess_grey": 15,
-            "guess_w_icon_only": 16,
-            "high_score_box": 17,
-            "in_game_mini_map": 18,
-            "invite_friends": 19,
-            "leader_board": 20,
-            "left_menu_dark": 21,
-            "loading_loc_white": 22,
-            "make_a_guess": 23,
-            "next_orange_btn": 24,
-            "next_round": 25,
-            "other": 26,
-            "participants_box": 27,
-            "play": 28,
-            "play_again": 29,
-            "play_current_leg": 30,
-            "play_next_round": 31,
-            "points_bar": 32,
-            "points_bar_two_bars": 33,
-            "refresh_btn": 34,
-            "setup_round_time_limit_box": 35,
-            "share_challenge_box_white": 36,
-            "show_full_results": 37,
-            "show_high_score": 38,
-            "start_challenge_orange": 39,
-            "start_game": 40,
-            "status_bar": 41,
-            "status_bar_white": 42,
-            "try_another_map": 43,
-            "try_pro_for_free": 44,
-            "users_bar_white": 45,
-            "view_summary": 46,
-        }
-        id2class = {v: k for k, v in class_to_id.items()}
-        categories_ = [{"id": i, "name": id2class[i]} for i in categories_set]
+        if class2id and len(class2id) > 0:
+            # Should reach this case if we instantiated COCOMetric with a non-empty value for
+            # `class2id``. Added this for support for cocobetter version of pycocotools that handles
+            # per-class stats.
+            id2class = {v: k for k, v in class2id.items()}
+            categories_ = [{"id": i, "name": id2class[i]} for i in categories_set]
+        else:
+            categories_ = [{"id": i} for i in categories_set]
 
     res = {}
     if images_:
