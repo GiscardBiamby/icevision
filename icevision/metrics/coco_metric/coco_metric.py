@@ -1,9 +1,13 @@
 __all__ = ["COCOMetric", "COCOMetricType"]
 
+from typing import Dict
+
 from icevision.data import *
 from icevision.imports import *
 from icevision.metrics.metric import *
 from icevision.utils import *
+from omegaconf import DictConfig
+from pycocotools.cocoeval import Params
 
 
 class COCOMetricType(Enum):
@@ -27,6 +31,7 @@ class COCOMetric(Metric):
 
     def __init__(
         self,
+        config: DictConfig,
         metric_type: COCOMetricType = COCOMetricType.bbox,
         iou_thresholds: Optional[Sequence[float]] = None,
         print_summary: bool = False,
@@ -59,6 +64,7 @@ class COCOMetric(Metric):
                 iou_thresholds=self.iou_thresholds,
                 show_pbar=self.show_pbar,
             )
+            coco_eval.params.maxDets = [1, 10, 100]
             coco_eval.evaluate()
             coco_eval.accumulate()
 

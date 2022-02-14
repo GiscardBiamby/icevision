@@ -1,4 +1,5 @@
 __all__ = ["model"]
+import logging
 
 from icevision.imports import *
 from icevision.models.mmdet.common.utils import *
@@ -17,7 +18,8 @@ def model(
     cfg_options=None,
 ) -> nn.Module:
 
-    return build_model(
+    logging.disable(logging.INFO)
+    model = build_model(
         model_type="two_stage_detector_bbox",
         backbone=backbone,
         num_classes=num_classes,
@@ -26,3 +28,5 @@ def model(
         force_download=force_download,
         cfg_options=cfg_options,
     )
+    logging.disable(logging.NOTSET)
+    return model
