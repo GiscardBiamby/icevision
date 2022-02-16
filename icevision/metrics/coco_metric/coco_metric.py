@@ -7,7 +7,7 @@ from icevision.imports import *
 from icevision.metrics.metric import *
 from icevision.utils import *
 from omegaconf import DictConfig
-from pycocotools.cocoeval import Params
+from pycocotools.cocoeval import Params, StatKey, StatKeyPerClass
 
 
 class COCOMetricType(Enum):
@@ -65,6 +65,13 @@ class COCOMetric(Metric):
                 show_pbar=self.show_pbar,
             )
             coco_eval.params.maxDets = [1, 10, 100]
+            coco_eval.params.areaRng = [
+                [0 ** 2, 1e5 ** 2],
+                # [0 ** 2, 32 ** 2],
+                # [32 ** 2, 96 ** 2],
+                # [96 ** 2, 1e5 ** 2],
+            ]
+            coco_eval.params.areaRngLbl = ["all"]
             coco_eval.evaluate()
             coco_eval.accumulate()
 
@@ -73,21 +80,13 @@ class COCOMetric(Metric):
 
         stats = coco_eval.stats
         per_class_stats = coco_eval.stats_dict_per_class
-        logs = {
-            "AP (IoU=0.50:0.95) area=all": stats[0],
-            "AP (IoU=0.50) area=all": stats[1],
-            "AP (IoU=0.75) area=all": stats[2],
-            "AP (IoU=0.50:0.95) area=small": stats[3],
-            "AP (IoU=0.50:0.95) area=medium": stats[4],
-            "AP (IoU=0.50:0.95) area=large": stats[5],
-            "AR (IoU=0.50:0.95) area=all maxDets=1": stats[6],
-            "AR (IoU=0.50:0.95) area=all maxDets=10": stats[7],
-            "AR (IoU=0.50:0.95) area=all maxDets=100": stats[8],
-            "AR (IoU=0.50:0.95) area=small maxDets=100": stats[9],
-            "AR (IoU=0.50:0.95) area=medium maxDets=100": stats[10],
-            "AR (IoU=0.50:0.95) area=large maxDets=100": stats[11],
-            **per_class_stats,
-        }
+        logs = {k: v for k, v in coco_eval.stats_dict.items()}
+        logs = {**logs, **per_class_stats}
+        # Copy the the key that gets logged to the progress bar for "COCOMetric":
+        # print("coco_eval.stats_dict.keys: ", coco_eval.stats_dict.keys())
+        logs["AP (IoU=0.75) area=all"] = coco_eval.stats_dict[
+            StatKey("AP", iou="0.75", area="all", max_dets=coco_eval.params.maxDets[-1])
+        ]
 
         self._reset()
         return logs

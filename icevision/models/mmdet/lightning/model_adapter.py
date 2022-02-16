@@ -1,17 +1,15 @@
 __all__ = ["MMDetModelAdapter"]
 
-from icevision.imports import *
-from icevision.utils import *
-from icevision.metrics import *
-from icevision.engines.lightning.lightning_model_adapter import LightningModelAdapter
-from icevision.core.record_components import (
-    InstanceMasksRecordComponent,
-    BBoxesRecordComponent,
-)
-from icevision.core.mask import MaskArray
 from icevision.core.bbox import BBox
-
+from icevision.core.mask import MaskArray
+from icevision.core.record_components import (BBoxesRecordComponent,
+                                              InstanceMasksRecordComponent)
+from icevision.engines.lightning.lightning_model_adapter import \
+    LightningModelAdapter
+from icevision.imports import *
+from icevision.metrics import *
 from icevision.models.mmdet.common.bbox import convert_raw_predictions
+from icevision.utils import *
 
 
 class MMDetModelAdapter(LightningModelAdapter, ABC):
@@ -28,8 +26,8 @@ class MMDetModelAdapter(LightningModelAdapter, ABC):
         A `LightningModule`.
     """
 
-    def __init__(self, model: nn.Module, metrics: List[Metric] = None):
-        super().__init__(metrics=metrics)
+    def __init__(self, model: nn.Module, metrics: List[Metric] = None, **kw_args):
+        super().__init__(metrics=metrics, **kw_args)
         self.model = model
 
     @abstractmethod
