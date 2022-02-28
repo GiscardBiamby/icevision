@@ -37,9 +37,11 @@ class COCOMetric(Metric):
         print_summary: bool = False,
         show_pbar: bool = False,
         class2id: Dict = None,
+        summary_ious: Optional[List[float]] = None,
     ):
         self.metric_type = metric_type
         self.iou_thresholds = iou_thresholds
+        self.summary_ious = summary_ious
         self.print_summary = print_summary
         self.show_pbar = show_pbar
         self._records, self._preds = [], []
@@ -64,6 +66,8 @@ class COCOMetric(Metric):
                 iou_thresholds=self.iou_thresholds,
                 show_pbar=self.show_pbar,
             )
+            if self.summary_ious:
+                coco_eval.params.summaryIous = self.summary_ious
             coco_eval.params.maxDets = [1, 10, 100]
             coco_eval.params.areaRng = [
                 [0 ** 2, 1e5 ** 2],
